@@ -1,0 +1,1 @@
+JavaScript 练习,写一个模仿jQuery一部分功能的小插件,同时学习git。
