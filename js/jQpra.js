@@ -25,8 +25,26 @@
 
 			if ( str[0] === "#" ) 
 			{
-				arr[0] = document.getElementById( str. )
+				arr[0] = document.getElementById( str.replace(/#/, '') );
 			}
+			else if (str[0] === ".")
+			{
+				var cName = str.replace(/\./, '');
+				if (document.getElementsByClassName) {
+					arr = document.getElementsByClassName(cName);
+				}
+				else 
+				{
+					var allE = document.getElementsByTagName(*);
+					var reg = new RegExp("\\b" + cName + "\\b");
+					for (var i = 0, len = allE.length; i < len; i++) {
+						if (reg.test(allE[i].className)) {
+							arr.push(allE[i]);
+						}
+					}
+				}
+			}
+			return arr;
 		}
 	};
 
