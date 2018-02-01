@@ -1,13 +1,14 @@
 !function(w) {
 	function $(obj) {
 		var typeO = (typeof obj).toLowerCase();
-		//输入函数或者选择器
+		//输入函数或者选择器或者DOM对象
 
 		if (typeO === "function") 
 		{
+			//jq中可以多次添加入口函数,此处只能添加一次
 			window.onload = obj;
 		} 
-		else if (typeO === "string") 
+		else if (typeO === "string" || "object") 
 		{
 			return new Init(obj);
 		}
@@ -22,44 +23,66 @@
 		//获取js对象
 		init: function(str) {
 			var arr = [];
-
-			if ( str[0] === "#" ) 
+			var typestr = (typeof str).toLowerCase();
+			if (typestr === "string") 
 			{
-				arr[0] = document.getElementById( str.replace(/#/, '') );
-			}
-			else if (str[0] === ".")
-			{
-				var cName = str.replace(/\./, '');
-				if (document.getElementsByClassName) {
-					var aJso = document.getElementsByClassName(cName);
-					var len = aJso.length;
-					for (var i = 0; i < len; i++) {
-						arr[i] = aJso[i];
+				if ( str[0] === "#" ) 
+				{
+					arr[0] = document.getElementById( str.replace(/#/, '') );
+				}
+				else if (str[0] === ".")
+				{
+					var cName = str.replace(/\./, '');
+					if (document.getElementsByClassName) 
+					{
+						var aJso = document.getElementsByClassName(cName);
+						var len = aJso.length;
+						for (var i = 0; i < len; i++) {
+							arr[i] = aJso[i];
+						}
+					}
+					else 
+					{
+						var allE = document.getElementsByTagName("*");
+						var reg = new RegExp("\\b" + cName + "\\b");
+						for (var i = 0, len = allE.length; i < len; i++) {
+							if (reg.test(allE[i].className)) {
+								arr.push(allE[i]);
+							}
+						}
 					}
 				}
 				else 
 				{
-					var allE = document.getElementsByTagName("*");
-					var reg = new RegExp("\\b" + cName + "\\b");
-					for (var i = 0, len = allE.length; i < len; i++) {
-						if (reg.test(allE[i].className)) {
-							arr.push(allE[i]);
-						}
+					var aJso = document.getElementsByTagName(str);
+					var len = aJso.length;
+					for (var i = 0; i < len; i++) {
+						arr[i] = aJso[i];
+					}			
+				}
+			
+			}
+			else if (typestr === "object")
+			{
+				//此时有几种情况:1 DOM对象, 2 DOM对象数组, 3 jq对象, 4jq对象数组
+				if (str.length) 
+				{
+					//如果是伪数组,也可以视作数组进行处理
+					for (var i = 0, len = str.length; i < len; i++) {
+						//可能的情况,DOM数组,jq对象(,jq对象数组 不考虑)
+						arr.push(str[i]);
 					}
 				}
-			}
-			else 
-			{
-				var aJso = document.getElementsByTagName(str);
-				var len = aJso.length;
-				for (var i = 0; i < len; i++) {
-					arr[i] = aJso[i];
-				}			
+				else 
+				{
+					arr.push(str);
+				}
 			}
 			for (var i in arr) {
 				this[i] = arr[i];
 			}
-			return arr.length;
+			return arr.length;	
+
 		},
 
 		//遍历
@@ -83,7 +106,64 @@
 			return this.length;
 		},
 
-		index: function() {},
+		index: function(str) {
+			var typeS = (typeof str).toLowerCase();
+			if (typeS === undefined) {
+				var siblings = this[0].parentNode.children();
+				for (var i = 0, len = siblings.length; i < len; i++) {
+					if (siblings[i] === this[0]) {
+						return i;
+					}
+				}
+			}
+			else if (typeS === "string")
+			{
+				var arr = $(str);
+				for (var i = 0, len = arr.length; i < len; i++) {
+					if (arr[i] === this[0]) {
+						return i;
+					}
+				}
+			}
+			else if (typeS === "object")
+			{
+				var arr = str;
+				for (var i = 0, len = arr.length; i < len; i++) {
+					if (arr[i] === this[0]) {
+						return i;
+					}
+				}
+			}
+			return -1;
+		},
+
+		click: function(fn) {
+			this.each(function() {
+				this.onclick = fn;
+			});
+		},
+
+		mousedown: function(fn) {
+			this.each(function() {
+				this.onmousedown = fn;
+			});
+		},
+
+		mouseup: function(fn) {
+			this.each(function() {
+				this.onmouseup = fn;
+			});
+		},
+
+		hover: function() {
+			var argu = arguments;
+			var len = argu.length;
+			var num = len === 1 ? 0 : 1; 
+			this.each(function() {
+				this.onmouseenter = argu[0];
+				this.onmouseleave = argu[num];
+			});
+		},
 
 		//获取,设置css属性
 		css: function () {
@@ -107,6 +187,29 @@
 				}
 			}
 			return this;
+		},
+
+		offset: function() {
+			var obj = {
+				top: 0,
+				left: 0
+			};
+			var oDOM = this[0];
+			while(oDOM !== document.body) 
+			{
+				obj.top += oDOM.offsetTop;
+				obj.left += oDOM.offsetLeft;
+				oDOM = oDOM.offsetParent;
+			}
+			return obj;
+		},
+
+		position: function() {
+			var obj = {
+				top: this[0].offsetTop,
+				left: this[0].offsetLeft
+			};
+			return obj;
 		},
 
 		html: function(str) {
@@ -314,7 +417,7 @@
 					var prop = (nowTime - startTime) / time;
 					if (prop >= 1) {
 						prop = 1;
-						callback();
+						callback && callback();
 						clearInterval(timer);
 					}
 					var val = startVal + (endVal-startVal)*prop;
