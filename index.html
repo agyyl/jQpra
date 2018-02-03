@@ -3,14 +3,45 @@
 <head>
 	<meta charset="UTF-8">
 	<title>模拟jQuery的练习</title>
+	<style>
+		.show {
+			display: none;
+			border: 5px solid #aaa;
+			margin: 30px auto;
+			width: 300px;
+			height: 300px;
+		}
+		p {
+			border: 1px solid #aaa;
+		}
+	</style>
+	<!-- <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script> -->
 	<script src="js/jQpra.js"></script>
 </head>
 <body>
-	<div class="box">
-		<p class="">这是第1个p<a href="#" class="a1">this is a a tag</a></p>
-		<p class="">这是第2个p<a href="#" class="a2">this is a a tag</a></p>
-		<p class="">这是第3个p<a href="#" class="a3">this is a a tag</a></p>
-		<p class="">这是第4个p<a href="#" class="a4">this is a a tag</a></p>
+	<div class="box" id="out">
+		<p class="ap">这是第1个p<a href="#" id="a1">this is a a tag</a></p>
+		<p class="ap">这是第2个p<a href="#" id="a2">this is a a tag</a></p>
+		<p class="ap">这是第3个p<a href="#" id="a3">this is a a tag</a></p>
+		<p class="ap">这是第4个p<a href="#" id="a4">this is a a tag</a></p>
 	</div>
+	<div class="show"></div>
+	<script>
+		document.onclick = function() {
+			$(".show").fadeIn(1000);
+		};
+		// $(function() {
+		// 	var aP = document.getElementsByClassName("ap");
+		// 	var $ap = $(aP).addClass("app");
+		// 	console.log($ap);
+		// });
+		// console.log($(".ap"));
+		$(".box").css("position","absolute");
+		$(".ap").hover(function() {
+			console.log($(this).position());
+		},function() {
+			console.log(1);
+		});
+	</script>
 </body>
 </html>
