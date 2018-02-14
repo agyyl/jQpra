@@ -212,6 +212,110 @@
 			return obj;
 		},
 
+		scrollTop: function(num) {
+			if (num) 
+			{
+				this.each(function () {
+					if (this === document) 
+					{
+						document.docuemntElement.scrollTop = num + "px";
+						dcoument.body.scrollTop = num + "px";
+					}
+					else 
+					{
+						this.scrollTop = num + "px";
+					}
+				});
+				return this;
+			}
+			else 
+			{
+				if (this[0] === document) 
+				{
+					return document.documentElement.scrollTop ||document.body.scrollTop;
+				}
+				else 
+				{
+					return this[0].scrollTop;
+				}
+			}
+		},
+
+		scrollLeft: function(num) {
+			if (num) 
+			{
+				this.each(function () {
+					if (this === document) 
+					{
+						document.docuemntElement.scrollLeft = num + "px";
+						dcoument.body.scrollLeft = num + "px";
+					}
+					else 
+					{
+						this.scrollLeft = num + "px";
+					}
+				});
+				return this;
+			}
+			else 
+			{
+				if (this[0] === document) 
+				{
+					return document.documentElement.scrollLeft ||document.body.scrollLeft;
+				}
+				else 
+				{
+					return this[0].scrollLeft;
+				}
+			}
+		},
+
+		width: function(num) {
+			if (num) 
+			{
+				if (parseInt(num) === num)
+				{
+					num += "px";
+				}
+				this.css("width", num);
+			}
+			else 
+			{
+				return parseInt(this.css("width"));
+			}
+		},
+
+		height: function(num) {
+			if (num) 
+			{
+				if (parseInt(num) === num)
+				{
+					num += "px";
+				}
+				this.css("height", num);
+			}
+			else 
+			{
+				return parseInt(this.css("height"));
+			}
+		},
+
+		innerWidth: function() {
+			return this[0].clientWidth;
+		},
+
+		innerHeight: function() {
+			return this[0].clientHeight;
+		},
+
+		outerWidth: function() {
+			return this[0].offsetWidth;
+		},
+
+		outerHeight: function() {
+			return this[0].offsetHeight;
+		},
+
 		html: function(str) {
 			if (str) 
 			{
