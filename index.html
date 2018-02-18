@@ -4,60 +4,52 @@
 	<meta charset="UTF-8">
 	<title>模拟jQuery的练习</title>
 	<style>
-		.show {
-			display: none;
-			border: 5px solid #aaa;
-			margin: 30px auto;
-			width: 300px;
-			height: 300px;
+		.box {
+			height: 1000px;
+			border: 1px solid #aaa;
+			overflow: auto;
 		}
 		p {
-			border: 1px solid #aaa;
-			height: 400px;
+			height: 200px;
+			border: 1px solid red;
+			margin: 30px;
 		}
-		.onbox {
-			margin: 20px;
-			height: 300px;
-			width: 200px;
-			border: 10px solid #aaa;
-			padding: 20px;
+		#div1{
+		  border:1px solid black;
+		  width:200px;
+		  height:200px;
+		  overflow:auto;
 		}
-		.scro {
-			height: 300px;
-			overflow: auto;
-			border: 1px solid #aaa;
-		}
-		.inner {
-			height: 600px;
+		#div2{height:250px;}
+		#div3{
+		  height:48px;
+		  width:30px;
+		  border:1px solid red;
 		}
 	</style>
-	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
-	<!-- <script src="js/jQpra.js"></script> -->
+	<!-- <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script> -->
+	<script src="js/jQpra.js"></script>
 </head>
 <body>
-	<div class="onbox">
-		这是一个div
+	<div class="box">
+		<p>这是第 1 个p标签</p>
+		<p>这是第 2 个p标签</p>
+		<p>这是第 3 个p标签</p>
+		<p class="a on b" id="Pfour">这是第 4 个p标签</p>
+		<p>这是第 5 个p标签</p>
+		<p>这是第 6 个p标签</p>
+		<p>这是第 7 个p标签</p>
 	</div>
-	<div class="box" id="out">
-		<p class="ap">这是第1个p<a href="#" id="a1">this is a a tag</a></p>
-		<p class="ap">这是第2个p<a href="#" id="a2">this is a a tag</a></p>
-		<p class="ap">这是第3个p<a href="#" id="a3">this is a a tag</a></p>
-		<p class="ap">这是第4个p<a href="#" id="a4">this is a a tag</a></p>
-	</div>
-	<div class="scro">
-		<div class="inner">
-			edtgerg
+		<div id="div1">
+		  <div id="div2">
+		   <div id="div3"></div>
+		  </div>
 		</div>
-	</div>
-	<div class="show"></div>
+		<button>获得offset值</button>
 	<script>
-		// document.onclick = function() {
-		// 	$(".show").fadeIn(1000);
-		// };
-		// $("#out").scrollTop();
-		console.log($(".onbox").innerWidth());
-		console.log($(".onbox").outerWidth());
-
+		var $box = $("div").children(".on");
+		// var $box = $("div p");
+		console.log($box);
 	</script>
 </body>
 </html>

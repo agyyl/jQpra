@@ -12,20 +12,21 @@
 		{
 			return new Init(obj);
 		}
-
 	};
 
-	function Init(str) {
-		this.length = this.init(str);
+	function Init(obj) {
+		this.length = this.init(obj);
 	}
 
 	Init.prototype = {
 		//获取js对象
-		init: function(str) {
+		init: function(obj) {
 			var arr = [];
-			var typestr = (typeof str).toLowerCase();
-			if (typestr === "string") 
-			{
+			var typeobj = (typeof obj).toLowerCase();
+
+			function findObjs(str, par) {
+				var arr = [];
+				par = par || document;
 				if ( str[0] === "#" ) 
 				{
 					arr[0] = document.getElementById( str.replace(/#/, '') );
@@ -33,9 +34,9 @@
 				else if (str[0] === ".")
 				{
 					var cName = str.replace(/\./, '');
-					if (document.getElementsByClassName) 
+					if (par.getElementsByClassName) 
 					{
-						var aJso = document.getElementsByClassName(cName);
+						var aJso = par.getElementsByClassName(cName);
 						var len = aJso.length;
 						for (var i = 0; i < len; i++) {
 							arr[i] = aJso[i];
@@ -43,7 +44,7 @@
 					}
 					else 
 					{
-						var allE = document.getElementsByTagName("*");
+						var allE = par.getElementsByTagName("*");
 						var reg = new RegExp("\\b" + cName + "\\b");
 						for (var i = 0, len = allE.length; i < len; i++) {
 							if (reg.test(allE[i].className)) {
@@ -54,35 +55,61 @@
 				}
 				else 
 				{
-					var aJso = document.getElementsByTagName(str);
+					var aJso = par.getElementsByTagName(str);
 					var len = aJso.length;
 					for (var i = 0; i < len; i++) {
 						arr[i] = aJso[i];
 					}			
 				}
-			
+				return arr;
 			}
-			else if (typestr === "object")
+			function fObj(aStr, aPar) {
+				var arr = [];
+				aPar = aPar || [document];
+				for (var i = 0, len = aPar.length; i < len; i++) {
+					arr = arr.concat(findObjs(aStr[0], aPar[i]));
+				}
+				aStr.shift();
+				arr = aStr.length ? fObj(aStr, arr) : arr;
+				return arr;
+			}
+
+			if (typeobj === "string") 
+			{
+				if(/\s/.test(obj)) 
+				{
+					var aStr = obj.split(/\s/);
+					arr = fObj(aStr);
+				}
+				else //没有后代选择器
+				{
+					arr = findObjs(obj);
+				}
+			}	
+			else if (typeobj === "object")
 			{
 				//此时有几种情况:1 DOM对象, 2 DOM对象数组, 3 jq对象, 4jq对象数组
-				if (str.length) 
+				if (obj === window || obj.nodeType) 
+				{
+					arr[0] = obj;
+				}
+				else if (obj.length) 
 				{
 					//如果是伪数组,也可以视作数组进行处理
-					for (var i = 0, len = str.length; i < len; i++) {
+					for (var i = 0, len = obj.length; i < len; i++) {
 						//可能的情况,DOM数组,jq对象(,jq对象数组 不考虑)
-						arr.push(str[i]);
+						arr.push(obj[i]);
 					}
 				}
-				else 
-				{
-					arr.push(str);
-				}
+				// else 
+				// {
+				// 	arr.push(obj);
+				// }
 			}
 			for (var i in arr) {
 				this[i] = arr[i];
 			}
 			return arr.length;	
-
 		},
 
 		//遍历
@@ -100,6 +127,32 @@
 		//返回对应的jQ对象
 		eq:function(i) {
 			return Init(this[i]);
+		},
+
+		//返回par对象数组的子代元素中可以被str选择器选中的元素
+		children: function(str) {
+			var arr1 = [];
+			var arr = [];
+			this.each(function() {
+				var arrObj = this.children;
+				for (var i = 0, len = arrObj.length; i < len; i++) {
+					arr1.push(arrObj[i]);
+				}
+			});
+			if (str) {
+				var $arr = $(str);
+				for (var i = 0, len = arr1.length; i < len; i++) {
+					var bool = false;
+					$arr.each(function() {
+						if (this === arr1[i]) {
+							bool = true;
+						}
+					});
+					bool && arr.push(arr1[i]);
+				}
+				return arr;
+			}
+			return arr1;
 		},
 
 		size: function() {
@@ -212,6 +265,8 @@
 			return obj;
 		},
 
+		//获取匹配元素相对滚动条顶部的偏移。此方法对可见和隐藏元素均有效。
+		//针对的是一个元素自己的滚动条,而不是这个元素的父级的滚动条
 		scrollTop: function(num) {
 			if (num) 
 			{
@@ -342,6 +397,19 @@
 				return this[0].innerText;
 			}
 			return this;
+		},
+
+		hasClass: function(cla) {
+			var result = false;
+			// var reg = new RegExp('(^|\\s)' + cla + '(\\s|$)');
+			var reg = new RegExp("\\b" + cla + '\\b');
+			console.log(reg);
+			this.each(function() {
+				if (reg.test(this.className)) {
+					result = true;
+				}
+			});
+			return result;
 		},
 
 		addClass: function(str) {
