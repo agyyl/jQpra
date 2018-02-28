@@ -93,7 +93,7 @@
 				{
 					arr[0] = obj;
 				}
-				else if (obj.length) 
+				else if (obj.length || obj.length === 0) 
 				{
 					//如果是伪数组,也可以视作数组进行处理
 					for (var i = 0, len = obj.length; i < len; i++) {
@@ -101,10 +101,10 @@
 						arr.push(obj[i]);
 					}
 				}
-				// else 
-				// {
-				// 	arr.push(obj);
-				// }
+				else 
+				{
+					arr.push(obj);
+				}
 			}
 			for (var i in arr) {
 				this[i] = arr[i];
@@ -154,6 +154,122 @@
 			}
 			return arr1;
 		},
+
+		find: function(arg) {
+			function findObjs(str, par) {
+				var arr = [];
+				par = par || document;
+				if ( str[0] === "#" ) 
+				{
+					arr[0] = document.getElementById( str.replace(/#/, '') );
+				}
+				else if (str[0] === ".")
+				{
+					var cName = str.replace(/\./, '');
+					if (par.getElementsByClassName) 
+					{
+						var aJso = par.getElementsByClassName(cName);
+						var len = aJso.length;
+						for (var i = 0; i < len; i++) {
+							arr[i] = aJso[i];
+						}
+					}
+					else 
+					{
+						var allE = par.getElementsByTagName("*");
+						var reg = new RegExp("\\b" + cName + "\\b");
+						for (var i = 0, len = allE.length; i < len; i++) {
+							if (reg.test(allE[i].className)) {
+								arr.push(allE[i]);
+							}
+						}
+					}
+				}
+				else 
+				{
+					var aJso = par.getElementsByTagName(str);
+					var len = aJso.length;
+					for (var i = 0; i < len; i++) {
+						arr[i] = aJso[i];
+					}			
+				}
+				return arr;
+			}
+			function fObj(aStr, aPar) {
+				var arr = [];
+				aPar = aPar || [document];
+				for (var i = 0, len = aPar.length; i < len; i++) {
+					arr = arr.concat(findObjs(aStr[0], aPar[i]));
+				}
+				aStr.shift();
+				arr = aStr.length ? fObj(aStr, arr) : arr;
+				return arr;
+			}
+			var arr = [];
+			var typeArg = (typeof arg).tolowerCase();
+			switch (typeArg) {
+				case "string":
+					var aC = arg.split(" ");
+					arr = fObj(aC, this);
+					break;
+				case "object":
+					if (arg.css) 
+					{
+						this.each(function() {
+							arr = $(this).children();
+						});
+					}
+					break;
+			}
+		},
+
+		parent: function() {
+			var arg = arguments;
+			var arr = [];
+			for (var i = 0; i < this.length; i++) {
+				var oDom = this[i].parentNode ? this[i].parentNode : null;
+				if (oDom && arr.indexOf(oDom) === -1) {
+					arr.push(oDom);
+				} 
+			}
+			if (arg.length && arr.length) {
+				var arr1 = arr;
+				arr = [];
+				$(arg[0]).each(function() {
+					if(arr1.indexOf(this) !== -1) {
+						arr.push(this);
+					}
+				});
+			}
+			return $(arr);
+		},
+
+		parents: function() {
+			var arr = [];
+			var arg = arguments;
+			var aTest = this;
+			while(aTest.parent().length) {
+				var $aDom = aTest.parent();
+				$aDom.each(function() {
+					if (arr.indexOf(this) === -1 && this !== document) {
+						arr.push(this);
+					} 
+				});
+				aTest = $aDom;
+			}
+			if (arg.length && arr.length) {
+				var arr1 = arr;
+				arr = [];
+				$(arg[0]).each(function() {
+					if(arr1.indexOf(this) !== -1) {
+						arr.push(this);
+					}
+				});
+			}
+			return $(arr);
+		},
+
+		offsetParent: function() {},
 
 		size: function() {
 			return this.length;

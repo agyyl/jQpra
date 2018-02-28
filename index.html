@@ -5,30 +5,15 @@
 	<title>模拟jQuery的练习</title>
 	<style>
 		.box {
-			height: 1000px;
-			border: 1px solid #aaa;
-			overflow: auto;
+			width: 100px;
+			margin: 0;
 		}
-		p {
-			height: 200px;
-			border: 1px solid red;
-			margin: 30px;
-		}
-		#div1{
-		  border:1px solid black;
-		  width:200px;
-		  height:200px;
-		  overflow:auto;
-		}
-		#div2{height:250px;}
-		#div3{
-		  height:48px;
-		  width:30px;
-		  border:1px solid red;
+		.box, .at {
+			position: relative;
 		}
 	</style>
-	<!-- <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script> -->
-	<script src="js/jQpra.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+	<!-- <script src="js/jQpra.js"></script> -->
 </head>
 <body>
 	<div class="box">
@@ -39,17 +24,20 @@
 		<p>这是第 5 个p标签</p>
 		<p>这是第 6 个p标签</p>
 		<p>这是第 7 个p标签</p>
-	</div>
-		<div id="div1">
-		  <div id="div2">
-		   <div id="div3"></div>
-		  </div>
+		<div class="at">
+			<p class="tes">this is a test.</p>
 		</div>
-		<button>获得offset值</button>
+	</div>
 	<script>
-		var $box = $("div").children(".on");
+		var $box = $("div");
+		var $aP = $("p");
 		// var $box = $("div p");
-		console.log($box);
+		// console.log($aP.parent(".at"));
+		// console.log($box.find("1p"));
+		// console.log($(".box").parent().parent().parent());
+		// console.log($(".box").parent().parent().parent().parent());
+		// console.log($(".tes").parents(".box"));
+		console.log($("p").offsetParent());
 	</script>
 </body>
 </html>
