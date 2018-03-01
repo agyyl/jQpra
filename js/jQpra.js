@@ -29,7 +29,14 @@
 				par = par || document;
 				if ( str[0] === "#" ) 
 				{
-					arr[0] = document.getElementById( str.replace(/#/, '') );
+					var oDom = document.getElementById( str.replace(/#/, '') );
+					var newDom = oDom;
+					var bool = false;
+					while (newDom.parentNode) {
+						newDom = newDom.parentNode;
+						par === newDom ? bool = true : null;
+					}
+					bool ? arr[0] = oDom : null; 
 				}
 				else if (str[0] === ".")
 				{
@@ -150,18 +157,26 @@
 					});
 					bool && arr.push(arr1[i]);
 				}
-				return arr;
+				arr1 = arr;
 			}
-			return arr1;
+			return $(arr1);
 		},
 
 		find: function(arg) {
+			//参数1:选择器字符串,每个选择器都是单个的类/标签/id选择器,参数2:父级元素
 			function findObjs(str, par) {
 				var arr = [];
 				par = par || document;
 				if ( str[0] === "#" ) 
 				{
-					arr[0] = document.getElementById( str.replace(/#/, '') );
+					var oDom = document.getElementById( str.replace(/#/, '') );
+					var newDom = oDom;
+					var bool = false;
+					while (newDom && newDom.parentNode) {
+						newDom = newDom.parentNode;
+						par === newDom ? bool = true : null;
+					}
+					bool ? arr[0] = oDom : null; 
 				}
 				else if (str[0] === ".")
 				{
@@ -195,6 +210,8 @@
 				}
 				return arr;
 			}
+			//参数1:选择器字符串数组,参数2:父元素数组
+			//返回父元素数组每一项的所有子元素 中 可以被选择器选中的元素
 			function fObj(aStr, aPar) {
 				var arr = [];
 				aPar = aPar || [document];
@@ -206,21 +223,20 @@
 				return arr;
 			}
 			var arr = [];
-			var typeArg = (typeof arg).tolowerCase();
+			var typeArg = (typeof arg).toLowerCase();
 			switch (typeArg) {
 				case "string":
 					var aC = arg.split(" ");
+					var aStr = [];
 					arr = fObj(aC, this);
 					break;
 				case "object":
-					if (arg.css) 
-					{
-						this.each(function() {
-							arr = $(this).children();
-						});
-					}
-					break;
+					var aSubDom = fObj("*", this);
+					$(arg[0]).each(function() {
+						aSubDom.indexOf(this) !== -1 && arr.push(this);
+					});
 			}
+			return $(arr);
 		},
 
 		parent: function() {
@@ -268,8 +284,21 @@
 			}
 			return $(arr);
 		},
-
-		offsetParent: function() {},
+		//返回每一个元素的第一个定位的父级元素
+		offsetParent: function() {
+			var arr = [];
+			this.each(function() {
+				var $par = $(this);
+				var bool = true;
+				do{
+					$par = $par.parent();
+					var str = $par.css("position");
+					bool = str === "relative" || str === "absolute";
+					bool && arr.push($par[0]);
+				}while(!bool)
+			});
+			return $(arr);
+		},
 
 		size: function() {
 			return this.length;
@@ -304,6 +333,103 @@
 				}
 			}
 			return -1;
+		},
+
+		is: function(arg) {
+			var $arg = $(arg);
+			var bool = false;
+			this.each(function() {
+				var That = this;
+				$arg.each(function() {
+					this === That ? bool = true : null;
+				});
+			});
+			return bool;
+		},
+
+		has: function(arg) {
+			var $aCho = $(arg);
+			var aDom = [];
+			var arr = [];
+			this.each(function() {
+				var aTestDom = this.getElementsByTagName("*");
+				for (var i = 0, len = aTestDom.length; i < len; i++) {
+					aDom.indexOf(aTestDom[i]) === -1 ? aDom.push(aTestDom[i]) : null;
+				}
+			});
+			$aCho.each(function() {
+				console.log(aDom)
+				aDom.indexOf(this) !== -1 ? arr.push(this) : null;
+			});
+			return $(arr);
+		},
+
+		next: function(arg) {
+			var arr = [];
+			var arr1 = [];
+			var $aCho = $(arg);
+			this.each(function() {
+				if (this.nextElementSibling) {
+					arr.indexOf(this.nextElementSibling) === -1 ? arr.push(this.nextElementSibling) : null;
+				}
+			});
+			if (arg) {
+				$aCho.each(function() {
+					arr.indexOf(this) !== -1 ? arr1.push(this) : null;
+				});
+				arr = arr1;
+			}
+			return $(arr);
+		},
+
+		prev: function(arg) {
+			var arr = [];
+			var arr1 = [];
+			var $aCho = $(arg);
+			this.each(function() {
+				if (this.previousElementSibling) {
+					arr.indexOf(this.previousElementSibling) === -1 ? arr.push(this.previousElementSibling) : null;
+				}
+			});
+			if (arg) {
+				$aCho.each(function() {
+					arr.indexOf(this) !== -1 ? arr1.push(this) : null;
+				});
+				arr = arr1;
+			}
+			return $(arr);
+		},
+
+		siblings: function(arg) {
+			var arr = [];
+
+			function siblings(n, elem) {
+				var matched = [];
+
+				for ( ; n; n = n.nextSibling ) {
+					if ( n.nodeType === 1 && n !== elem ) {
+						matched.push( n );
+					}
+				}
+
+				return matched;
+			}
+			this.each(function() {
+				var arr1 = siblings((this.parentNode || {}).firstChild, this);
+				for(var i in arr1) {
+					if (arr.indexOf(arr1[i]) === -1) {
+						arr.push(arr1[i]);
+					}
+				}
+			});
+			if (arg) {
+				var arr1 = [];
+				$(arg).each(function() {
+					arr.indexOf(this) !== -1 && arr1.push(this);
+				});
+				arr = arr1;
+			}
+			return $(arr);
 		},
 
 		click: function(fn) {
