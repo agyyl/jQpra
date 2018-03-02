@@ -18,6 +18,8 @@
 		this.length = this.init(obj);
 	}
 
+
+
 	Init.prototype = {
 		//获取js对象
 		init: function(obj) {
@@ -117,6 +119,12 @@
 				this[i] = arr[i];
 			}
 			return arr.length;	
+		},
+
+		extend: function(obj) {
+			for (var key in obj) {
+				Init.prototype[key] = obj[key];
+			}
 		},
 
 		//遍历
@@ -460,11 +468,48 @@
 			});
 		},
 
+		mouseenter: function(data, fn) {
+			var arg = arguments;
+			if (arg[0] && (typeof arg[0]).toLowerCase() !== "function") 
+			{
+				data = arg[0];
+				if (arg[1] && (typeof arg[1]).toLowerCase() === "function") {
+					fn = arg[1];
+				}
+			}
+			else if (arg[0] && !arg[1]) 
+			{
+				fn = arg[0];
+			}
+			this.each(function() {
+				this.onmouseenter = fn;
+			});
+		},
+
+		mouseleave: function(data, fn) {
+			var arg = arguments;
+			if (arg[0] && (typeof arg[0]).toLowerCase() !== "function") 
+			{
+				data = arg[0];
+				if (arg[1] && (typeof arg[1]).toLowerCase() === "function") {
+					fn = arg[1];
+				}
+			}
+			else if (arg[0] && !arg[1]) 
+			{
+				fn = arg[0];
+			}
+			this.each(function() {
+				this.onmouseleave = fn;
+			});			
+		},
+
 		//获取,设置css属性
 		css: function () {
 			var argu = arguments;
 			var arguType = (typeof argu[0]).toLowerCase();
-			if ( argu.length === 2 ) {
+			if ( argu.length === 2 ) 
+			{
 				this.each( function () {
 					this.style[argu[0]] = argu[1];
 				} );
@@ -768,18 +813,142 @@
 			return this;
 		},
 
-		show: function() {
+		animation: function(end, time, callback) {
 			this.each(function() {
-				this.style.display = "block";
+				var star = {},
+					change = {},
+					prop = 0;
+				var $ele = $(this);
+				for (var attr in end) {
+					star[attr] = $ele.css(attr) || $ele.css("filter").replace(/\D/g, "")/100;
+					change[attr] = parseInt(end[attr]) - parseInt(star[attr]);
+				}
+				var starTime = new Date();
+				if ((typeof time).toLowerCase() === "string") {
+					switch (time) {
+						case "fast": 
+							time = 400;
+							break;
+						case "normal":
+							time = 600;
+							break;
+						case "slow":
+							time = 800;
+							break;
+					}
+					if ((typeof parseInt(time)).toLowerCase() === "number") {
+						time = parseInt(time);
+					}
+				}
+				function move(){
+					var nowTime = new Date();
+					if (time && time !== 0) 
+					{
+						prop = ( nowTime - starTime ) / time;
+					}
+					else 
+					{
+						prop = 1;
+					}
+
+					if (prop < 1) 
+					{
+						// $ele[0].timer = setTimeout(move, 60);
+					}
+					else 
+					{
+						prop = 1;
+						clearInterval($ele[0].timer);
+						$ele[0].timer = null;
+						
+					}
+					for (var attr in end) {
+						var nowVal = parseInt(star[attr]) + change[attr] * prop;
+						if (attr !== "opacity") 
+						{
+							$ele.css(attr,nowVal+"px");
+						}
+						else 
+						{
+							$ele.css(attr, nowVal);
+							$ele[0].style.filter = "alpha(opacity="+nowVal*100+")";
+						}						
+					}		
+					prop === 1 && callback && callback();					
+				}
+				if(!$ele[0].timer){
+					$ele[0].timer = setInterval(move, 60);
+				}
+			});
+		},
+
+		show: function() {
+			var arg = arguments;
+			var speed;
+			speed = arg[0] || 0;
+			callback = arg[1] || null;
+			this.each(function() {
+				var $this = $(this);
+				if ($this.css("display") === "none") {
+					this.style.display = "block";
+					var height = $this.css("height");
+					var width = $this.css("width");
+					var overflow = $this.css("overflow");
+					this.style.opacity = 0;
+					this.style.height = 0;
+					this.style.width = 0;
+					this.style.overflow = "hidden";
+					callback2 = function () {
+						$this.css("overflow", overflow);
+						callback && callback();
+					}
+				}
+				$this.animation({"opacity" : 1, "height" : height, "width" : width}, speed, callback2);
 			});
 			return this;
 		},
 
 		hide: function() {
+			var arg = arguments;
+			var speed;
+			speed = arg[0] || 0;
+			callback = arg[1] || null;
 			this.each(function() {
-				this.style.display = "none";
+				var $this = $(this);
+				if ($this.css("display") !== "none") {
+					var height = $this.css("height");
+					var width = $this.css("width");
+					var overflow = $this.css("overflow");
+					this.style.overflow = "hidden";
+					callback2 = function () {
+						$this.css({
+							"display": "none",
+							"height": height,
+							"width": width,
+							"overflow": overflow
+						});
+						callback && callback();
+					}
+					$this.animation({"opacity" : 0, "height" : 0, "width" : 0}, speed, callback2);
+				}				
 			});
 			return this;
+		},
+
+		toggle: function(speed, callback) {
+			speed = speed || null;
+			callback = callback || null;
+			this.each(function() {
+				var $this = $(this);
+				if ($this.css("opacity") === 0 || $this.css("display") === "none") 
+				{
+					$this.show(speed, callback);
+				}
+				else 
+				{
+					$this.hide(speed, callback);
+				}
+			});
 		},
 
 		//淡入,参数作为  时间(毫秒数,slow,normal,fast), 回调函数, 
@@ -811,7 +980,7 @@
 						break;
 				}
 			}
-			if (time === undefined) time = 400;
+			time = time || 400;
 			this.each(function() {
 				var startVal = getCss(this, "opacity");
 				if (startVal === undefined) {
@@ -901,9 +1070,56 @@
 				return jsO[attr];
 			}
 			return this;			
-		}
+		},
+
+		slideUp: function(speed, fn) {
+			speed = speed || 800;
+			this.each(function() {
+				var $this = $(this);
+				var height = $this.css("height");
+				function callback() {
+					$this[0].style.display = "none";
+					$this.css("height", height);
+					fn && fn();
+				}				
+				$this.animation({"height": 0}, speed, callback);
+			});
+		},
+
+		slideDown: function(speed, fn) {
+			speed = speed || 800;
+			callback = fn || null;
+			this.each(function() {
+				var $this = $(this);
+				if ($this.css("display") === "none") {
+					$this[0].style.display = "block";
+					var height = $this.css("height");
+					$this[0].style.height = 0;
+				}				
+				callback = fn || null;
+				$this.animation({"height": height}, speed, callback);
+			});
+		},
+
+		slideToggle: function(speed, fn) {
+			this.each(function() {
+				$this = $(this);
+				if ($this[0].style.display !== "none") 
+				{
+					$this.slideUp(speed, fn);
+				}
+				else 
+				{
+					$this.slideDown(speed, fn);
+				}
+			});
+		},
+
+		/*stop: function(clearQueue, gotoEnd) {
+			clearQueue = clearQueue === undefined ? true : false;
+		}*/
 
 	};
-
+	$.fn = Init.prototype;
 	w.$ = $;
 }(window);
